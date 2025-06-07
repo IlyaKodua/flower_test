@@ -1,0 +1,4 @@
+device : cuda
+weights_path : weights/best_flower_model.pth
+embeddings_path : embeddings_dict.pickle
+top_k : 5

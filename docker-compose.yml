@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  image-search-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dataset:/dataset
+    environment:
+      - PYTHONUNBUFFERED=1
+    container_name: image-search-api
+    runtime: nvidia
+    mem_limit: 14g
+    cpu_count: 15
