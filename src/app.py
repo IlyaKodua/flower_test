@@ -1,9 +1,14 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, HTTPException
 from PIL import Image
 import io
 import torch
 import yaml
 from near_searcher import NearestFinder
+import base64
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 app = FastAPI()
 
@@ -17,27 +22,30 @@ finder_sim_images = NearestFinder(config["embeddings_path"],
                                   device)
 
 @app.post("/search")
-async def search_image(file: UploadFile = File(...)):
+async def search_image(data: dict):
     """
     Принимает изображение и возвращает топ-5 ближайших изображений из тестовой выборки.
     
     Args:
-        file: Загруженное изображение.
+        data: Запрос
     
     Returns:
         dict: JSON с топ-5 путями и расстояниями.
     """
-    # Проверяем тип файла
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Файл должен быть изображением")
+    logger.info(f"Start search")
+    image_data = base64.b64decode(data["image"])
+    try:
+        logger.info(f"read image")
+        image = Image.open(io.BytesIO(image_data)).convert('RGB')
+    except Exception:
+        logger.error(f"read image error")
+        raise HTTPException(status_code=400, detail="Невалидное изображение")
 
-    # Читаем изображение
-    contents = await file.read()
-    image = Image.open(io.BytesIO(contents)).convert('RGB')
-
+    logger.info(f"find nearest")
     # Находим топ-5 ближайших изображений
     top_k_results = finder_sim_images.find_nearest(image)
 
+    logger.info(f"make result")
     # Формируем ответ
     result = [
         {"path": img_path, "simularity": float(1 - distance)}

@@ -2,6 +2,7 @@ import requests
 import os
 import random
 from typing import List
+import base64
 
 def get_image_paths(dataset_path: str, num_images: int = 5) -> List[str]:
     """
@@ -22,7 +23,37 @@ def get_image_paths(dataset_path: str, num_images: int = 5) -> List[str]:
     
     return random.sample(image_paths, min(num_images, len(image_paths)))
 
-def test_search_endpoint(image_paths: List[str], url: str = "http://localhost:8080/search"):
+def send_image_in_base64(image_path: str, url: str):
+    """
+    Отправляет изображение в формате Base64 через POST-запрос.
+    
+    Args:
+        image_path: Путь к изображению.
+        url: URL для отправки запроса.
+    
+    Returns:
+        dict: Ответ сервера.
+    """
+    try:
+        # Читаем изображение и кодируем в Base64
+        with open(image_path, "rb") as f:
+            image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+        
+        # Формируем JSON с Base64-строкой
+        payload = {"image": base64_image}
+        
+        # Отправляем POST-запрос
+        response = requests.post(url, json=payload)
+        response.raise_for_status()  # Проверяем, успешен ли запрос
+        
+        return response.json()
+    
+    except Exception as e:
+        print(f"Ошибка при отправке изображения: {e}")
+        return None
+    
+def test_search_endpoint(image_paths: List[str], url: str):
     """
     Тестирует API-эндпоинт, отправляя изображения и выводя результаты.
     
@@ -37,18 +68,8 @@ def test_search_endpoint(image_paths: List[str], url: str = "http://localhost:80
         
         # Отправляем POST-запрос с изображением
         try:
-            with open(image_path, "rb") as f:
-                files = {"file": (os.path.basename(image_path), f, "image/jpeg")}
-                response = requests.post(url, files=files)
-            
-            # Проверяем статус ответа
-            if response.status_code != 200:
-                print(f"Ошибка для {image_path}: {response.status_code}, {response.json().get('detail', 'Нет деталей')}")
-                continue
-            
-            # Получаем результаты
-            results = response.json()
-            return results
+            resulr = send_image_in_base64(image_path, url)
+            return resulr
         
         except Exception as e:
             print(f"Ошибка при обработке {image_path}: {str(e)}")

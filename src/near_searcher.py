@@ -4,9 +4,8 @@ import torchvision.models as models
 from PIL import Image
 import torchvision.transforms as transforms
 import numpy as np
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 import pickle
-
 
 class EmbeddingGetter:
     """A class to extract image embeddings using a pre-trained EfficientNet model.
