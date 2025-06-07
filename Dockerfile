@@ -17,4 +17,4 @@ COPY --from=builder /app /app
 COPY ./src /app/src
 
 CMD ["/app/bin/gunicorn", "--workers=1", "--bind= 0.0.0.0:8080", "-k=uvicorn.workers.UvicornWorker", "--chdir=/app/src",\
-    "--timeout=300", "--log-level=debug", "--keep-alive=5","--preload", "main:app"]
+    "--timeout=300", "--log-level=debug", "--keep-alive=5","--preload", "app:app"]
