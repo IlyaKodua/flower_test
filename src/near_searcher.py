@@ -35,7 +35,8 @@ class EmbeddingGetter:
         self.embedding_model = models.efficientnet_v2_s()
         self.embedding_model.classifier[-1] = nn.Identity()
         
-        self.embedding_model.load_state_dict(torch.load(path_to_weights))
+        self.embedding_model.load_state_dict(torch.load(path_to_weights,
+                                                        map_location=torch.device('cpu')))
         self.embedding_model.to(device)
         self.embedding_model.eval()
 
